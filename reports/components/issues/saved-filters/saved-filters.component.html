@@ -1,0 +1,62 @@
+<div class="no-padding-content">
+  <p-sidebar
+    (onShow)="prepare()"
+    [(visible)]="showSidebar"
+    [showCloseIcon]="false"
+    position="right"
+    styleClass="w-29rem filters-custom-sm"
+    >
+    <!-- (onHide)="hideFilters()" -->
+    <ng-template pTemplate="header">
+      <p-button
+        (click)="hideFilters()"
+        icon="pi pi-times"
+        styleClass="button-rounded button-text p-button-secondary "
+      ></p-button>
+      <div class="text-center s-w-100 pr-4">
+        <p class="font-semibold text-2xl p-text-secondary">Filtros salvos</p>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="content">
+      <section class="pt-2">
+        <div *ngFor="let item of userFilters ; index as i">
+          <div class="flex justify-content-between align-items-center">
+            <div
+              (click)="item.expanded = !item.expanded"
+              class="flex align-items-center"
+            >
+              <i
+                class="pi pi-angle-down text-600"
+                [ngClass]="item.expanded ? 'rotate-180' : ''"
+              ></i>
+              <span class="pl-2">{{ item.name ? item.name : 'Filtro sem nome' }}</span>
+            </div>
+            <button
+              pButton
+              pRipple
+              class="p-button-secondary button-text font-normal"
+              icon="pi pi-trash"
+              (click)="deleteFilter(item , i)"
+            ></button>
+          </div>
+          <div class="animation-duration-3000 surface-100 card-item p-3 pb-0" *ngIf="item.expanded">
+            <div *ngFor="let param of paramsOnly(item) | keyvalue" class="flex justify-content-between align-items-center pb-3 pr-1">
+              <span>{{translateKey(param.key)}}</span>
+              <span>{{param.value}}</span>
+            </div>
+          </div>
+        </div>
+      </section>
+    </ng-template>
+    <ng-template pTemplate="footer">
+      <div class="flex s-w-100">
+        <p-button
+          label="Fechar"
+          styleClass="p-button-sm"
+          class="s-w-100 pr-2"
+          (click)="hideFilters()"
+        ></p-button>
+      </div>
+    </ng-template>
+  </p-sidebar>
+</div>

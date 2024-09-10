@@ -1,0 +1,77 @@
+#orders-table {
+  .p-button.p-button-icon-only.p-button-rounded {
+    border: 1px solid #f4f4f4 !important;
+  }
+
+  .p-datatable .p-datatable-thead > tr > th {
+    padding: 0.5rem;
+  }
+
+  .table.table-font thead th {
+    font-weight: 600;
+    color: #6f6f6f !important;
+    font-size: 0.875rem;
+    letter-spacing: -0.03125rem;
+    line-height: 1.05rem;
+  }
+
+  .status-color {
+    color: #f75b2b;
+  }
+
+  .color-orange{
+    color: #F04E23
+  }
+
+  .max-w-20rem {
+    max-width: 20rem;
+  }
+
+  .small-icon svg {
+    width: 0.75rem !important;
+    height: 0.75rem !important;
+  }
+
+  .badge-green {
+    background-color: #6bbb4f;
+    color: #fff;
+    text-align: center;
+    font-size: 0.85rem;
+    font-weight: 500;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    line-height: 22px;
+  }
+
+  .bg-orange{
+    background-color: #F04E23 !important;
+  }
+
+  .border-r3 {
+    border-radius: 3.125rem;
+  }
+
+  .table-height-fixed {
+      .p-scroller {
+        height: 20rem !important;
+      }
+      }
+
+  .border-rounded {
+    border-radius: 2rem;
+    border: 1px solid var(--a-color-support-light-40, #c9c9c9);
+  }
+}
+
+.gray-input-sm .p-inputtext{
+  border: none;
+  background-color: #f4f4f4;
+  padding: 0.25rem 0.5rem !important;
+}
+
+
+.quick-filter-button {
+  .p-button.p-button-outlined:enabled:hover:focus {
+    background-color: #f04e23 !important;
+  }
+}

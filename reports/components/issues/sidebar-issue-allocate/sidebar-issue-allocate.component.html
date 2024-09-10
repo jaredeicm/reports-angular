@@ -1,0 +1,103 @@
+<div class="allocate-sidebar">
+  <p-sidebar
+    [(visible)]="showSidebar"
+    [showCloseIcon]="false"
+    (onHide)="closeSidebar()"
+    position="right"
+    styleClass="w-29rem filters-custom-sm"
+  >
+    <ng-template pTemplate="header">
+      <p-button
+        (click)="closeSidebar()"
+        icon="pi pi-times"
+        styleClass="button-rounded button-text p-button-secondary "
+      ></p-button>
+      <div class="text-center s-w-100 pr-4">
+        <p
+          *ngIf="!paramsConfig.isReallocate"
+          class="font-semibold text-2xl p-text-secondary"
+        >
+          Atribuir ocorrência
+        </p>
+        <p
+          *ngIf="paramsConfig.isReallocate"
+          class="font-semibold text-2xl p-text-secondary"
+        >
+          Reatribuir ocorrência
+        </p>
+        <p
+          *ngIf="!paramsConfig.isReallocate"
+          class="text-sm text-500 font-semibold"
+        >
+          Ocorrências sem atribuição
+        </p>
+        <p
+          *ngIf="paramsConfig.isReallocate"
+          class="text-sm text-500 font-semibold"
+        >
+          Ocorrências em andamento
+        </p>
+      </div>
+    </ng-template>
+    <ng-template pTemplate="content">
+      <section class="back-light-80 p-3 mt-3">
+        <div class="flex pb-2 justify-content-between">
+          <p>
+            <b>{{ paramsConfig.occurrence }}</b>
+          </p>
+          <p>
+            ID <b>{{ paramsConfig.occurrence_id }}</b>
+          </p>
+        </div>
+        <div class="flex justify-content-between">
+          <p>
+            Setor <b>{{ paramsConfig.sector }}</b>
+          </p>
+          <p>
+            Criado a <b>{{ paramsConfig.created }}</b>
+          </p>
+        </div>
+        <div *ngIf="paramsConfig.isReallocate" class="flex pt-2 justify-content-between">
+          <p>
+            Operador atual <b>{{ paramsConfig.atualOperator }}</b>
+          </p>
+
+        </div>
+      </section>
+      <section>
+        <div class="flex justify-content-between align-items-center p-3 filters-open-sm ">
+          <p>Operador</p>
+          <div class="s-w-50 flex">
+            <p-dropdown
+              appendTo="body"
+              class="s-w-100"
+              placeholder="Selecione o operador"
+              optionLabel="title"
+              optionValue="value"
+              [(ngModel)]="selectedOperator"
+              [options]="operators"
+              [filter]="true"
+            ></p-dropdown>
+          </div>
+        </div>
+      </section>
+    </ng-template>
+    <ng-template pTemplate="footer">
+      <div class="flex s-w-100">
+        <p-button
+          label="Cancelar"
+          styleClass="button-text p-button-sm"
+          class="s-w-50 pr-2"
+          (click)="closeSidebar()"
+        ></p-button>
+        <p-button
+          [label]="isReallocate ? 'Reatribuir' : 'Atribuir'"
+          [disabled]="!selectedOperator && token"
+          styleClass="p-button-sm"
+          class="s-w-50"
+          (click)="assignOperator()"
+        ></p-button>
+      </div>
+    </ng-template>
+  </p-sidebar>
+</div>

@@ -1,0 +1,387 @@
+<div id="orders-table">
+  <p-overlayPanel appendTo="body" #opQuickFilters>
+    <ng-template pTemplate="content">
+      <input
+        *ngIf="selectedFilter.enableSearch"
+        (keyup)="filterOptions($event, selectedFilter)"
+        class="p-inputtext-sm p-1 s-w-100 mb-2 search-grey "
+        [(ngModel)]="selectedFilter.search"
+        placeholder="Buscar"
+        type="text"
+        pInputText
+      />
+      <div
+        class="overflow-y-auto text-center"
+        [ngClass]="
+          selectedFilter.class
+            ? selectedFilter.class
+            : 'min-w-15rem max-h-20rem max-w-25rem'
+        "
+      >
+        <div
+          *ngFor="let item of selectedFilter.options"
+          class="flex align-items-center justify-content-between pb-2"
+        >
+          <label [for]="item.field">{{ item.title }}</label>
+          <p-checkbox
+            *ngIf="!selectedFilter.singleSelect"
+            [name]="selectedFilter.field"
+            [value]="item.value"
+            [(ngModel)]="selectedFilter.selectedAux"
+          ></p-checkbox>
+
+          <p-radioButton
+            *ngIf="selectedFilter.singleSelect"
+            [name]="selectedFilter.field"
+            [value]="item.value"
+            [(ngModel)]="selectedFilter.selectedAux"
+            (click)="
+              selectedFilter.customInterval =
+                item.value == 'custom_range' ? true : false
+            "
+          ></p-radioButton>
+        </div>
+
+        <div
+          *ngIf="selectedFilter.customInterval"
+          class="gray-input-sm s-w-100 flex"
+        >
+          <p-calendar
+            inputId="dateformat"
+            appendTo="body"
+            placeholder="Início"
+            [(ngModel)]="interval_min"
+            dateFormat="dd/mm/yy"
+            [maxDate]="maxDate"
+            class="mr-1"
+          ></p-calendar>
+          <p-calendar
+            inputId="dateformat"
+            appendTo="body"
+            placeholder="Fim"
+            [(ngModel)]="interval_max"
+            dateFormat="dd/mm/yy"
+            [maxDate]="maxDate"
+            class="ml-1"
+          ></p-calendar>
+        </div>
+      </div>
+      <div class="text-center">
+        <p-button
+          label="Aplicar filtros"
+          styleClass="button-text"
+          *ngIf="selectedFilter.selectedAux?.length"
+          (click)="
+            selectedFilter.selectedAux == 'custom_range'
+              ? filterInterval(selectedFilter, opQuickFilters)
+              : quickFilter(selectedFilter, opQuickFilters)
+          "
+        ></p-button>
+      </div>
+    </ng-template>
+  </p-overlayPanel>
+
+  <p-overlayPanel appendTo="body" #opFilters>
+    <ng-template pTemplate="content">
+      <div
+        class="flex align-items-center flex-column justify-content-between w-10rem"
+      >
+        <button
+          pButton
+          pRipple
+          label="Novo filtro"
+          class="p-button-secondary button-text font-normal p-1 mb-1 s-w-100 text-left"
+          icon="pi pi-angle-right"
+          iconPos="right"
+          (click)="showFilters = true"
+        ></button>
+        <button
+          pButton
+          pRipple
+          label="Filtros salvos"
+          class="p-button-secondary button-text font-normal p-1 s-w-100 text-left"
+          icon="pi pi-angle-right"
+          iconPos="right"
+          (click)="showSavedFilters = true"
+        ></button>
+        <p class="line-separator-light mt-3 mb-3 s-w-100"></p>
+        <div
+          *ngFor="let item of userFilters"
+          class="flex align-items-center pb-2 s-w-100"
+        >
+          <p-radioButton
+            name="selectedFilter"
+            [value]="item"
+            [(ngModel)]="selectedUserFilter"
+            [inputId]="item.id"
+            (onClick)="opFilters.hide();applySavedFilter(item);"
+          ></p-radioButton>
+          <label [for]="item.id" class="ml-2 text-color-secondary">{{
+            item.name ? item.name : "Filtro sem nome"
+          }}</label>
+        </div>
+        <p-button
+          label="Limpar seleção"
+          styleClass="button-text"
+          *ngIf="selectedUserFilter"
+          (click)="clearSearch()"
+        ></p-button>
+      </div>
+    </ng-template>
+  </p-overlayPanel>
+
+  <p-accordion class="custom-accordion">
+    <p-accordionTab [selected]="true">
+      <ng-template pTemplate="header">
+        <section class="s-w-100 ml-5">
+          <div class="flex justify-content-between">
+            <div class="flex align-items-center">
+              <i [class]="tableIcon"></i>
+              <p class="pl-2 font-semibold color-title">
+                {{ tableTitle }}
+              </p>
+            </div>
+
+            <div
+              class="flex align-items-center"
+              onclick="event.stopPropagation();"
+              (keydown.enter)="$event.stopPropagation()"
+            >
+              <div *ngIf="enableSearchField" class="flex">
+                <span class="p-float-label">
+                  <input
+                    id="float-input"
+                    (keyup.enter)="search()"
+                    [(ngModel)]="searchParam"
+                    class="w-25rem"
+                    type="text"
+                    pInputText
+                  />
+                  <label for="float-input">Buscar</label>
+                </span>
+              </div>
+              <button
+                *ngIf="searchParam.length"
+                pButton
+                pRipple
+                icon="pi pi-search"
+                class="p-button-sm ml-3 w-2rem h-2rem"
+                (click)="search()"
+              ></button>
+
+              <div class="flex">
+                <button
+                  pButton
+                  pRipple
+                  type="button"
+                  icon="icon-sm icon-refresh"
+                  title="Atualizar"
+                  [disabled]="isLoading"
+                  class="button-text p-button-secondary p-button-rounded ml-3"
+                  (click)="listOrders()"
+                ></button>
+                <div class="relative">
+                  <button
+                    pButton
+                    pRipple
+                    type="button"
+                    icon="icon-sm icon-adjustments"
+                    class="button-text p-button-secondary p-button-rounded ml-3"
+                    (click)="openFilters(opFilters, $event)"
+                  ></button>
+                  <p *ngIf="countFilters > 0" class="filters-applied">
+                    <span class="text-sm font-medium">{{ countFilters }}</span>
+                  </p>
+                </div>
+                <button
+                  *ngIf="enableDownload"
+                  pButton
+                  pRipple
+                  type="button"
+                  icon="pi pi-download"
+                  class="button-text p-button-secondary p-button-rounded ml-2"
+                ></button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </ng-template>
+
+      <ng-template pTemplate="content">
+        <div class="flex mb-3 ml-7 quick-filter-button">
+          <div
+            *ngFor="let item of quickFilters | keyvalue : originalOrder"
+            class="flex mr-2"
+            [ngClass]="
+              isFiltered(item.value) ? 'back-light-80 border-rounded ' : ''
+            "
+          >
+            <button
+              pButton
+              pRipple
+              [label]="item.value.label"
+              class="p-button-rounded quick-filter"
+              [ngClass]="
+                isFiltered(item.value)
+                  ? 'bg-orange text-white'
+                  : 'p-button-outlined'
+              "
+              icon="pi pi-angle-down"
+              iconPos="right"
+              (click)="showQuickFilter($event, opQuickFilters, item.value)"
+            ></button>
+            <div class="flex align-items-center" *ngIf="isFiltered(item.value)">
+              <span
+                *ngIf="!item.value.singleSelect"
+                class="badge-green border-circle ml-1"
+                >{{ item.value.selecteds?.length }}</span
+              >
+              <span
+                *ngIf="item.value.singleSelect"
+                class="badge-green border-r3 ml-1 pr-1 pl-1"
+                >{{ tagFilter(item.value, item.value.field) }}</span
+              >
+              <i
+                class="pi pi-times text-gray-400 pl-1 pr-1 cursor-pointer"
+                (click)="clearQuickFilter(item.value)"
+              ></i>
+            </div>
+          </div>
+          <div class="pl-3" *ngIf="filtered && wordSearched.length">
+            <button
+              pButton
+              pRipple
+              [label]="wordSearched"
+              class="button-text p-button-rounded p-button-outlined p-button-secondary quick-filter"
+              icon="pi pi-times"
+              iconPos="right"
+              (click)="removeSearch()"
+            ></button>
+          </div>
+        </div>
+
+        <p-table
+          [value]="orders"
+          [loading]="isLoading"
+          scrollHeight="345px"
+          [scrollable]="true"
+          [virtualScroll]="true"
+          [virtualScrollItemSize]="48"
+          [rows]="25"
+          [lazy]="pagination"
+          (onLazyLoad)="loadOrdersLazy($event)"
+          class="table table-font table-head-bg table-borderless table-vertical-center mb-0 table-height-fixed block no-text-wrap"
+        >
+          <ng-template pTemplate="header">
+            <tr class="row-header">
+
+              <ng-template
+                ngFor
+                let-header
+                [ngForOf]="headerTable"
+                let-i="index"
+                [ngForTrackBy]="trackByFn"
+              >
+                <th
+                  *ngIf="!header.columnFroze"
+                  [pSortableColumnDisabled]="!header.sort"
+                  [pSortableColumn]="header.sort ? header.field : ''"
+                  class="text-center table-sort"
+                  (click)="header.sort ? sort(header) : null"
+                >
+                  <div
+                    class="flex align-items-center text-center justify-content-center"
+                  >
+                    <span class="pr-1">
+                      {{ header.title }}
+                    </span>
+                    <div
+                      *ngIf="header.sort"
+                      [ngClass]="
+                        header.sorted && filters.order_by
+                          ? 'icon-xs sort-icon-orange-xs '
+                          : 'icon-xs sort-icon-xs'
+                      "
+                    ></div>
+                  </div>
+                </th>
+              </ng-template>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-item>
+            <tr *ngIf="!isLoading && orders.length">
+
+
+              <ng-template
+                ngFor
+                let-col
+                [ngForOf]="headerTable"
+                let-i="index"
+                [ngForTrackBy]="trackByFn"
+              >
+                <td
+                  class="align-middle text-center white-space-nowrap overflow-hidden text-overflow-ellipsis max-w-20rem"
+                >
+                  {{
+                    col.isTime
+                      ? convertMinutes(item[col.field] , col?.hourFormat)
+                      : item[col.field]
+                  }}
+                  <a
+                    *ngIf="col.orderLink"
+                    class="pi pi-external-link text-xs pl-1 font-bold color-orange cursor-pointer"
+                    routerLink="/admin/issues"
+                    [queryParams]="{ order_id: item?.order_id }"
+                    target="_blank"
+                  ></a>
+                  <span
+                    *ngIf="col.isAllocate"
+                    class="color-orange font-semibold text-sm cursor-pointer"
+                    (click)="operatorAllocate(item)"
+                    >{{ item.operator ? "Reatribuir" : "Atribuir" }}</span
+                  >
+                </td>
+              </ng-template>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr style="height: 285px">
+              <td colspan="17" class="text-center vertical-align-middle">
+                <h3 class="text-blue-900 font-semibold pb-5">
+                  Não encontramos resultados para essa pesquisa. <br />Tente
+                  filtrar/buscar novamente.
+                </h3>
+                <p-button
+                  label="Limpar pesquisa"
+                  styleClass="p-button-sm"
+                  (click)="clearSearch()"
+                ></p-button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </ng-template>
+    </p-accordionTab>
+  </p-accordion>
+  <app-dynamic-filters
+    [configForm]="configForm"
+    [tableTitle]="tableTitle"
+    [tableName]="tableName"
+    [showSidebar]="showFilters"
+    (hideSidebar)="showFilters = false"
+    (onFilter)="filter($event)"
+    (onSaveFilter)="includeSavedFilter($event)"
+    (onLoadFilter)="countSavedFilter($event)"
+    [operators]="operators"
+    [sectors]="sectors"
+    [types]="types"
+    >
+  </app-dynamic-filters>
+  <app-saved-filters
+    [showSidebar]="showSavedFilters"
+    (hideSidebar)="showSavedFilters = false"
+    [userFilters]="userFilters"
+  >
+  </app-saved-filters>
+</div>

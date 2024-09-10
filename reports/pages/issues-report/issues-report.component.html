@@ -1,0 +1,185 @@
+<div id="o2o-manager">
+  <p-card class="no-padding-content mb-3">
+    <div class="flex">
+      <p
+        class="min-w-max mr-3 text-500 font-semibold"
+        [ngClass]="!customInterval ? 'align-self-center' : ''"
+      >
+        Período em análise:
+      </p>
+      <p-dropdown
+        *ngIf="!customInterval"
+        class="s-w-100 input-sm"
+        (onChange)="setInterval($event.value)"
+        [options]="intervalData"
+        [(ngModel)]="intervalInfo"
+        optionLabel="title"
+        optionValue="value"
+      ></p-dropdown>
+      <div *ngIf="customInterval" class="s-w-100 grid calendar-filled">
+        <p-calendar
+          inputId="dateformat"
+          placeholder="Início"
+          class="col-6 lg:col-5 pb-0 pt-0 input-sm"
+          dateFormat="dd/mm/yy"
+          (onSelect)="setInterval('custom_range')"
+          [(ngModel)]="interval_min"
+          [maxDate]="today"
+        ></p-calendar>
+        <p-calendar
+          inputId="dateformat"
+          placeholder="Fim"
+          class="col-6 lg:col-5 pb-0 pt-0 input-sm"
+          dateFormat="dd/mm/yy"
+          (onSelect)="setInterval('custom_range')"
+          [(ngModel)]="interval_max"
+          [maxDate]="today"
+        ></p-calendar>
+        <div class="col-12 lg:col-2 text-right lg:text-center">
+          <button
+            pButton
+            label="Voltar ao padrão"
+            class="no-text-wrap button-text pb-0 pt-0"
+            (click)="defaultPeriod()"
+          ></button>
+        </div>
+      </div>
+    </div>
+  </p-card>
+
+  <section class="grid mt-3 mb-3 justify-content-between">
+    <p-card
+      class="no-padding-content col-6 md:col-4 lg:col-3"
+      *ngFor="let metric of metricCards"
+    >
+      <div class="block text-center">
+        <p class="text-500 font-semibold">{{ metric.title }}</p>
+        <p [class]="metric.class">
+          {{ metric.porcent ? porcent(metric.value) : metric.value }}
+          <span *ngIf="metric.porcent" class="text-sm vertical-align-middle"
+            >%</span
+          ><span *ngIf="metric.time" class="text-sm vertical-align-middle"
+            >horas</span
+          >
+        </p>
+      </div>
+    </p-card>
+  </section>
+
+  <div class="mb-3 flex align-items-center">
+    <i
+      [ngClass]="operatorsOpened ? 'pi pi-angle-up' : 'pi pi-angle-down '"
+      class="color-angle text-xl cursor-pointer"
+      (click)="operatorsOpened = !operatorsOpened"
+    ></i>
+    <p class="pl-2 color-title font-semibold text-xl">Operadores</p>
+  </div>
+  <div *ngIf="operatorsOpened">
+    <section class="mb-4">
+      <app-dynamic-table
+        tableTitle="Performance de operadores"
+        tableName="operator-performance"
+        tableIcon="icon-sm icon-rocket"
+        [intervalData]="sharedInterval"
+        [headerTable]="headerPerformance"
+        [quickFilters]="quickFilterPerformance"
+        [operators]="operators"
+        [userFilters]="filters?.operator_performance"
+        [pagination]="false"
+        [configForm]="filtersPerformance"
+      ></app-dynamic-table>
+    </section>
+    <section class="mb-4">
+      <app-dynamic-table
+        tableTitle="Operadores online por minuto"
+        tableName="online-operators"
+        tableIcon="pi pi-clock"
+        [intervalData]="sharedInterval"
+        [headerTable]="headerOperatorsOn"
+        [quickFilters]="quickFilterOperatorsOn"
+        [operators]="operators"
+        [sectors]="sectors"
+        [userFilters]="filters?.online_operators"
+        [configForm]="filtersOperatorsOn"
+      ></app-dynamic-table>
+    </section>
+  </div>
+
+  <div class="mb-3 flex align-items-center">
+    <i
+      [ngClass]="issuesOpened ? 'pi pi-angle-up' : 'pi pi-angle-down '"
+      class="color-angle cursor-pointer text-xl"
+      (click)="issuesOpened = !issuesOpened"
+    ></i>
+    <p class="pl-2 color-title font-semibold text-xl">Ocorrências</p>
+  </div>
+  <div *ngIf="issuesOpened">
+    <section class="mb-4">
+      <app-dynamic-table
+        #unnalocateds
+        tableTitle="Ocorrências sem atribuição"
+        tableName="unallocated-issues"
+        tableIcon="pi pi-exclamation-triangle"
+        [headerTable]="headerUnallocated"
+        [quickFilters]="quickFilterUnallocated"
+        [configForm]="filtersUnallocated"
+        [types]="types"
+        [sectors]="sectors"
+        [userFilters]="filters?.unallocated_issues"
+        (showSidebarAllocate)="showAllocate($event)"
+      ></app-dynamic-table>
+    </section>
+    <section class="mb-4">
+      <app-dynamic-table
+        #inprogress
+        tableTitle="Ocorrências em andamento"
+        tableName="issues-in-progress"
+        tableIcon="pi pi-user"
+        [headerTable]="headerIssuesInProgress"
+        [quickFilters]="quickFilterIssuesInProgress"
+        [sectors]="sectors"
+        [operators]="operators"
+        [types]="types"
+        [userFilters]="filters?.issues_in_progress"
+        [configForm]="filtersIssuesInProgress"
+        (showSidebarAllocate)="showAllocate($event)"
+      ></app-dynamic-table>
+    </section>
+    <section class="mb-4">
+      <app-dynamic-table
+        tableTitle="Ocorrências finalizadas"
+        tableName="issues-finished"
+        tableIcon="pi pi-check"
+        [intervalData]="sharedInterval"
+        [headerTable]="headerIssuesFinished"
+        [quickFilters]="quickFilterIssuesFinished"
+        [sectors]="sectors"
+        [operators]="operators"
+        [types]="types"
+        [userFilters]="filters?.issues_finished"
+        [configForm]="filtersIssuesFinished"
+      ></app-dynamic-table>
+    </section>
+    <section class="mb-4">
+      <app-dynamic-table
+        tableTitle="Performance por tipo de ocorrência"
+        tableName="issue-type-performance"
+        tableIcon="icon-sm icon-rocket"
+        [intervalData]="sharedInterval"
+        [headerTable]="headerIssuesType"
+        [quickFilters]="quickFilterIssuesType"
+        [sectors]="sectors"
+        [types]="types"
+        [userFilters]="filters?.type_performance"
+        [configForm]="filtersIssuesType"
+      ></app-dynamic-table>
+    </section>
+    <app-sidebar-issue-allocate
+      [showSidebar]="showSidebarAllocate"
+      (hideSidebar)="showSidebarAllocate = false"
+      [paramsConfig]="paramsAllocate"
+      [operators]="operators"
+      (onAllocate)="unnalocateds.listOrders(); inprogress.listOrders()"
+    ></app-sidebar-issue-allocate>
+  </div>
+</div>
